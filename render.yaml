@@ -1,0 +1,21 @@
+# Render Blueprint for the Census Income Classification API.
+#
+# The FastAPI application lives in starter/main.py (it defines `app`), so the
+# service uses `rootDir: starter` to make `main:app` resolve and to mirror how
+# CI runs pytest (working-directory: starter). Model artifacts and cleaned data
+# are committed to Git, so no pull step is required at deploy time.
+services:
+  - type: web
+    name: census-income-ml-api
+    runtime: python
+    rootDir: starter
+    plan: free
+    autoDeploy: true
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      # Pin the Python version to match CI (Python 3.13). Render reads
+      # PYTHON_VERSION to select the interpreter. Using an env var here avoids
+      # relying on a .python-version file (which is gitignored in this repo).
+      - key: PYTHON_VERSION
+        value: "3.13.7"

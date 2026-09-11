@@ -1,7 +1,10 @@
+import numpy as np
+import pandas as pd
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import fbeta_score, precision_score, recall_score
 
 
-def train_model(X_train, y_train):
+def train_model(X_train: np.ndarray, y_train: np.ndarray) -> RandomForestClassifier:
     """
     Trains a machine learning model and returns it.
 
@@ -16,7 +19,9 @@ def train_model(X_train, y_train):
     model : RandomForestClassifier
         Trained machine learning model.
     """
-    pass
+    model = RandomForestClassifier(random_state=42)
+    model.fit(X_train, y_train)
+    return model
 
 
 def compute_model_metrics(y, preds):
@@ -41,7 +46,7 @@ def compute_model_metrics(y, preds):
     return precision, recall, fbeta
 
 
-def inference(model, X):
+def inference(model: RandomForestClassifier, X: np.ndarray) -> np.ndarray:
     """ Run model inferences and return the predictions.
 
     Inputs
@@ -55,4 +60,53 @@ def inference(model, X):
     preds : np.ndarray
         Predictions from the model.
     """
-    pass
+    return model.predict(X)
+
+
+def compute_slice_metrics(
+    df: pd.DataFrame,
+    feature: str,
+    y: np.ndarray,
+    preds: np.ndarray,
+) -> dict[str, dict]:
+    """Compute model metrics for each unique value of a categorical feature.
+
+    For every unique value of ``feature``, the rows belonging to that value are
+    selected and precision, recall, and F-beta are computed via the existing
+    ``compute_model_metrics`` function, along with the number of samples in the
+    slice.
+
+    Inputs
+    ------
+    df : pd.DataFrame
+        DataFrame aligned by row index with ``y`` and ``preds``.
+    feature : str
+        Name of the categorical column in ``df`` to slice on.
+    y : np.ndarray
+        Known labels, binarized.
+    preds : np.ndarray
+        Predicted labels, binarized.
+    Returns
+    -------
+    metrics : dict[str, dict]
+        Mapping of each unique feature value to a dict with keys
+        ``feature``, ``value``, ``count``, ``precision``, ``recall``, and
+        ``fbeta``.
+    """
+    y = np.asarray(y)
+    preds = np.asarray(preds)
+    values = df[feature].to_numpy()
+
+    results: dict[str, dict] = {}
+    for value in pd.unique(df[feature]):
+        mask = values == value
+        precision, recall, fbeta = compute_model_metrics(y[mask], preds[mask])
+        results[str(value)] = {
+            "feature": feature,
+            "value": value,
+            "count": int(mask.sum()),
+            "precision": precision,
+            "recall": recall,
+            "fbeta": fbeta,
+        }
+    return results
