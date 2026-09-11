@@ -117,9 +117,17 @@ dmypy.json
 *.model
 *.weights
 
+# Track the trained model artifacts so the API can load them at runtime
+# (this project commits artifacts directly to Git; no DVC remote is used).
+!starter/model/model.pkl
+!starter/model/encoder.pkl
+!starter/model/lb.pkl
+
 # Data files (but keep small sample data)
 *.csv
-!starter/data/census.csv  # Keep the census dataset
+!starter/data/census.csv
+# Keep the cleaned dataset the training script and API depend on.
+!starter/data/census_clean.csv
 
 # Large data directories
 data/large/
