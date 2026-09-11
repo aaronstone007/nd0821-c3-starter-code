@@ -1,3 +1,32 @@
+# Census Income Classification API
+
+An end-to-end MLOps project that trains a `RandomForestClassifier` on the U.S.
+Census income dataset to predict whether a person earns more or less than
+$50K/year, serves the model through a FastAPI REST service, and ships it via a
+CI/CD workflow.
+
+## Overview
+- **Model:** scikit-learn `RandomForestClassifier` (`random_state=42`), predicting `<=50K` vs `>50K`.
+- **Pipeline:** data cleaning → `process_data` (one-hot encode categoricals, binarize the label) → train → evaluate (overall + per-slice metrics in `starter/slice_output.txt`) → persist `model.pkl`, `encoder.pkl`, `lb.pkl`.
+- **API:** FastAPI service (`starter/main.py`) exposing `GET /` (welcome) and `POST /predict` (inference). Hyphenated CSV fields are handled via Pydantic aliases.
+- **Testing:** `pytest` unit tests for the model and API, plus `flake8` linting.
+- **Versioning:** cleaned data and model artifacts are committed to Git so the API can load them at runtime (no DVC remote).
+- **CI:** GitHub Actions runs `flake8` + `pytest` on push (both must pass).
+- **Deployment:** deployed to Render as a web service (`render.yaml`) with auto-deploy from `main` gated on CI passing.
+
+## Submission Details: 
+- GitHub URL: `https://github.com/aaronstone007/nd0821-c3-starter-code`
+- Screenshots: `starter/screenshots`
+
+## Live API
+- Base URL: https://census-income-ml-api.onrender.com
+- `GET /` returns a welcome message.
+- `POST /predict` returns `{"prediction": "<=50K" | ">50K"}`.
+- `query_live_api.py` POSTs one record to the live endpoint and prints the status code and prediction.
+
+
+---
+
 Working in a command line environment is recommended for ease of use with git and dvc. If on Windows, WSL1 or 2 is recommended.
 
 # Environment Set up
